@@ -82,4 +82,32 @@ export class YoutubeService {
       throw error;
     }
   }
+
+  async getTopVideos(maxResults = 5): Promise<YoutubeVideo[]> {
+    try {
+      const channelId = this.configService.get('youtube.channelId', {
+        infer: true,
+      });
+
+      const response = await this.youtube.search.list({
+        part: ['snippet'],
+        channelId,
+        maxResults,
+        order: 'viewCount',
+        type: ['video'],
+      });
+
+      return (response.data.items || []).map((item) => ({
+        id: item.id?.videoId || '',
+        title: item.snippet?.title || '',
+        description: item.snippet?.description || '',
+        thumbnailUrl: item.snippet?.thumbnails?.high?.url || '',
+        publishedAt: item.snippet?.publishedAt || '',
+        url: `https://www.youtube.com/watch?v=${item.id?.videoId}`,
+      }));
+    } catch (error) {
+      this.logger.error(`Error fetching videos: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
 }

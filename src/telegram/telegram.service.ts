@@ -43,6 +43,7 @@ export class TelegramService implements OnModuleInit {
       this.bot.onText(/\/help/, this.handleHelpCommand.bind(this));
       this.bot.onText(/\/latest/, this.handleLatestCommand.bind(this));
       this.bot.onText(/\/top/, this.handleTopCommand.bind(this));
+      this.bot.onText(/\/latest5/, this.handleLatest5Command.bind(this)); // Add new command handler
       this.logger.log('Command handlers initialized');
     } catch (error) {
       this.logger.error(
@@ -59,6 +60,7 @@ export class TelegramService implements OnModuleInit {
         '🤖 <b>Available Commands</b>\n\n' +
         '/help - Show this help message\n' +
         '/latest - Show the latest video\n' +
+        '/latest5 - Show the latest 5 videos\n' + // Add new command to help
         '/top - Show top videos\n';
 
       await this.bot.sendMessage(chatId, helpMessage, { parse_mode: 'HTML' });
@@ -96,20 +98,56 @@ export class TelegramService implements OnModuleInit {
     }
   }
 
+  //una funciçon que muestre los últimos 5 videos en lugar de solo el último
+  private async handleLatest5Command(msg: TelegramBot.Message): Promise<void> {
+    try {
+      const chatId = msg.chat.id;
+      const latestVideos = await this.youtubeService.getLatestVideos(5); // Fetch the latest 5 videos
+
+      if (latestVideos.length > 0) {
+        const message = latestVideos
+          .map((video) => this.createVideoMessage(video))
+          .join('\n\n');
+
+        await this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+        this.logger.log(`Latest command processed for chat ${chatId}`);
+      } else {
+        await this.bot.sendMessage(chatId, 'No videos found.');
+        this.logger.log(`No videos found for chat ${chatId}`);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Error handling latest command: ${error.message}`,
+        error.stack,
+      );
+    }
+  }
+
   private async handleTopCommand(msg: TelegramBot.Message): Promise<void> {
     try {
       const chatId = msg.chat.id;
-      // This would normally fetch top videos from a service
-      await this.bot.sendMessage(
-        chatId,
-        '🏆 Feature coming soon: This will show the top videos.',
-      );
-      this.logger.log(`Top command processed for chat ${chatId}`);
+      const topVideos = await this.youtubeService.getTopVideos(5); // Fetch the top 5 videos
+
+      if (topVideos.length > 0) {
+        const message = topVideos
+          .map((video) => this.createVideoMessage(video))
+          .join('\n\n');
+
+        await this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+        this.logger.log(`Top command processed for chat ${chatId}`);
+      } else {
+        await this.bot.sendMessage(chatId, 'No top videos found.');
+        this.logger.log(`No top videos found for chat ${chatId}`);
+      }
     } catch (error) {
-      this.logger.error(
-        `Error handling top command: ${error.message}`,
-        error.stack,
-      );
+      if (error instanceof Error) {
+        this.logger.error(
+          `Error handling top command: ${error.message}`,
+          error.stack,
+        );
+      } else {
+        this.logger.error('Unknown error handling top command');
+      }
     }
   }
 
