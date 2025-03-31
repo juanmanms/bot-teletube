@@ -7,6 +7,7 @@ import * as Joi from 'joi';
   imports: [
     NestConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env',
       load: [configuration],
       validationSchema: Joi.object({
         YOUTUBE_API_KEY: Joi.string().required(),
