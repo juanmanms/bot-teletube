@@ -18,7 +18,7 @@ export class SyncService {
     private storageService: StorageService,
   ) {}
 
-  @Cron('0 */10 * * * *') // Runs every 55 minutes by default
+  @Cron('0 */55 * * * *') // Runs every 55 minutes by default
   async syncYoutubeVideos(): Promise<void> {
     try {
       const checkInterval = this.configService.get('app.checkInterval', {
