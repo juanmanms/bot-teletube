@@ -13,6 +13,7 @@ import * as Joi from 'joi';
         YOUTUBE_CHANNEL_ID: Joi.string().required(),
         TELEGRAM_BOT_TOKEN: Joi.string().required(),
         TELEGRAM_CHAT_ID: Joi.string().required(),
+        TELEGRAM_CHANEL_ID: Joi.string().optional(), // Add channelId and make it optional
         CHECK_INTERVAL: Joi.number().default(5),
       }),
       validationOptions: {

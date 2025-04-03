@@ -6,6 +6,7 @@ export default () => ({
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN,
     chatId: process.env.TELEGRAM_CHAT_ID,
+    channelId: process.env.TELEGRAM_CHANEL_ID, // Add channelId
   },
   app: {
     checkInterval: parseInt(process.env.CHECK_INTERVAL || '5', 10),
@@ -20,6 +21,7 @@ export interface AppConfig {
   telegram: {
     botToken: string;
     chatId: string;
+    channelId?: string; // Make channelId optional
   };
   app: {
     checkInterval: number;

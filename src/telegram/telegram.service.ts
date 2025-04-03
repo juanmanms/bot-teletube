@@ -9,6 +9,7 @@ export class TelegramService implements OnModuleInit {
   private readonly logger = new Logger(TelegramService.name);
   private bot: TelegramBot;
   private chatId: string;
+  private channelId: string | undefined; // Add channelId
 
   constructor(
     private configService: ConfigService<AppConfig>,
@@ -16,6 +17,9 @@ export class TelegramService implements OnModuleInit {
   ) {
     const token = this.configService.get('telegram.botToken', { infer: true });
     const chatId = this.configService.get('telegram.chatId', { infer: true });
+    this.channelId = this.configService.get('telegram.channelId', {
+      infer: true,
+    }); // Get channelId
 
     if (!token) {
       throw new Error(
@@ -155,12 +159,25 @@ export class TelegramService implements OnModuleInit {
     try {
       const message = this.createVideoMessage(video);
 
+      // Send to the user chat
       await this.bot.sendPhoto(this.chatId, video.thumbnailUrl, {
         caption: message,
         parse_mode: 'HTML',
       });
+      this.logger.log(
+        `Notification sent to chat: ${this.chatId} for video: ${video.id}`,
+      );
 
-      this.logger.log(`Notification sent for video: ${video.id}`);
+      // Send to the channel if channelId is configured
+      if (this.channelId) {
+        await this.bot.sendPhoto(this.channelId, video.thumbnailUrl, {
+          caption: message,
+          parse_mode: 'HTML',
+        });
+        this.logger.log(
+          `Notification sent to channel: ${this.channelId} for video: ${video.id}`,
+        );
+      }
     } catch (error) {
       this.logger.error(
         `Error sending video notification: ${error.message}`,
